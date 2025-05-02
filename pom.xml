@@ -8,6 +8,12 @@
     <artifactId>email-sender</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <!-- propiedades para aclarar que uso Java 11 -->
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
     <dependencies>
         <!-- JavaMail API for sending emails -->
         <dependency>
@@ -36,3 +42,4 @@
         </dependency>
     </dependencies>
 </project>
+
