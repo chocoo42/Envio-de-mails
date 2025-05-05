@@ -1,5 +1,7 @@
 package com.raico;
 
+import com.raico.model.Cliente;
+import com.raico.repository.ClienteRepository;
 import com.raico.utils.DatabaseConnection;
 import com.raico.utils.PdfScanner;
 
@@ -29,6 +31,16 @@ public class Main {
                 System.out.println("   - " + archivo.getName());
             }
         }
+
+        // Para verificar que las clases Cliente y ClienteRepository funcionan
+        // Esta funcion busca clientes en la base
+        Cliente cliente = ClienteRepository.buscarClientePorCodigo(10444);
+        if (cliente != null) {
+            System.out.println("Cliente encontrado: " + cliente);
+        } else {
+            System.out.println("No se encontró el cliente.");
+        }
+
     }
 }
 
