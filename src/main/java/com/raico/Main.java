@@ -2,46 +2,31 @@ package com.raico;
 
 import com.raico.model.Cliente;
 import com.raico.repository.ClienteRepository;
-import com.raico.utils.DatabaseConnection;
-import com.raico.utils.PdfScanner;
-
-import java.io.File;
-import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
+        // Creamos una instancia del repositorio que maneja los clientes
+        ClienteRepository clienteRepo = new ClienteRepository();
 
-        Connection conn = DatabaseConnection.getConnection();
-        if (conn != null) {
-            System.out.println("✅ Conexión a la base de datos establecida correctamente.\n");
-        } else {
-            System.out.println("❌ Error al conectar a la base de datos.");
-            return; // Si no hay conexión, no seguimos
-        }
+        // Supongamos que queremos buscar el cliente con código "123"
+        String codigoCliente = "123";
 
-        // Probamos el escaneo de archivos PDF
-        Map<String, List<File>> archivosPorCliente = PdfScanner.getPdfFilesGroupedByClientCode();
+        // Usamos el repositorio para buscarlo en la base de datos
+        Cliente cliente = clienteRepo.buscarPorCodigo(codigoCliente); // Llamamos al método actualizado
 
-        // Mostramos qué archivos se encontraron por cada cliente
-        for (String clientCode : archivosPorCliente.keySet()) {
-            System.out.println("📦 Cliente " + clientCode + " tiene los siguientes archivos:");
-            for (File archivo : archivosPorCliente.get(clientCode)) {
-                System.out.println("   - " + archivo.getName());
-            }
-        }
-
-        // Para verificar que las clases Cliente y ClienteRepository funcionan
-        // Esta funcion busca clientes en la base
-        Cliente cliente = ClienteRepository.buscarClientePorCodigo(10444);
+        // Verificamos si lo encontró o no
         if (cliente != null) {
-            System.out.println("Cliente encontrado: " + cliente);
+            // Mostramos los datos del cliente
+            System.out.println("Cliente encontrado:");
+            System.out.println("Código: " + cliente.getCodigo()); // Mostramos el código del cliente
+            System.out.println("Nombre: " + cliente.getNombre()); // Mostramos el nombre del cliente
+            System.out.println("Email: " + cliente.getEmail()); // Mostramos el email del cliente
         } else {
-            System.out.println("No se encontró el cliente.");
+            System.out.println("No se encontró un cliente con el código " + codigoCliente); // Mensaje si no se encuentra
         }
-
     }
 }
+
+
 
 

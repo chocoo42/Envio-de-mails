@@ -1,50 +1,63 @@
 package com.raico.utils;
 
+import com.raico.model.Cliente;
+import com.raico.repository.ClienteRepository;
+
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class PdfScanner {
 
-    // Ruta de la carpeta donde están los archivos PDF (ajustala a tu caso real)
-    private static final String PDF_FOLDER_PATH = "D:\\BORRAR\\Facturas Raico\\Facturas PDF";
+    // Ruta de la carpeta donde están los archivos PDF
+    private static final String CARPETA_PDF = "D:\\BORRAR\\Facturas Raico\\Facturas PDF"; // Cambia esta ruta si es necesario
 
-    /**
-     * Este método escanea la carpeta y agrupa los archivos PDF por código de cliente.
-     * Devuelve un Map donde:
-     * - clave: código del cliente (ej: 10444)
-     * - valor: lista de archivos PDF correspondientes a ese cliente
-     */
-    public static Map<String, List<File>> getPdfFilesGroupedByClientCode() {
-        Map<String, List<File>> groupedFiles = new HashMap<>();
+    // Este método recorre los archivos PDF y busca clientes
+    public static void escanearYBuscarClientes() {
+        File carpeta = new File(CARPETA_PDF); // Creamos un objeto File para acceder a la carpeta
 
-        File folder = new File(PDF_FOLDER_PATH);
+        // Obtenemos solo los archivos que terminan en .pdf
+        File[] archivos = carpeta.listFiles((dir, nombre) -> nombre.toLowerCase().endsWith(".pdf"));
 
-        // Verificamos que la carpeta exista y sea una carpeta
-        if (folder.exists() && folder.isDirectory()) {
-            File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".pdf"));
-
-            if (files != null) {
-                for (File file : files) {
-                    // Extraemos los primeros 8 dígitos del nombre del archivo
-                    String filename = file.getName();
-                    String codePart = filename.substring(0, 8); // ej: "00010444"
-
-                    // Eliminamos ceros a la izquierda (ej: "00010444" → "10444")
-                    String clientCode = codePart.replaceFirst("^0+(?!$)", "");
-
-                    // Agrupamos los archivos según el código de cliente
-                    groupedFiles.computeIfAbsent(clientCode, k -> new ArrayList<>()).add(file);
-                }
-            }
-
-        } else {
-            System.out.println("❌ La carpeta especificada no existe o no es válida: " + PDF_FOLDER_PATH);
+        // Si no hay archivos PDF, mostramos un mensaje y salimos del método
+        if (archivos == null || archivos.length == 0) {
+            System.out.println("No se encontraron archivos PDF en: " + CARPETA_PDF);
+            return; // Salimos si no hay archivos PDF
         }
 
-        return groupedFiles;
+        // Recorremos cada archivo PDF
+        for (File archivo : archivos) {
+            String nombreArchivo = archivo.getName(); // Obtenemos el nombre del archivo
+            System.out.println("Procesando archivo: " + nombreArchivo);
+
+            // Extraemos el código del cliente desde el nombre del archivo
+            String codigoCliente = extraerCodigoCliente(nombreArchivo);
+
+            if (codigoCliente != null) {
+                // Si conseguimos un código de cliente, buscamos al cliente en la base de datos
+                Cliente cliente = ClienteRepository.buscarPorCodigo(codigoCliente);
+
+                if (cliente != null) {
+                    // Si encontramos al cliente, lo mostramos
+                    System.out.println("Cliente encontrado: " + cliente);
+                } else {
+                    // Si no encontramos al cliente, mostramos una advertencia
+                    System.out.println("⚠️ No se encontró cliente con código: " + codigoCliente);
+                }
+            } else {
+                // Si no se pudo extraer el código, mostramos un mensaje de error
+                System.out.println("⚠️ No se pudo extraer código del archivo: " + nombreArchivo);
+            }
+        }
+    }
+
+    // Este método separa el nombre del archivo para obtener el código del cliente
+    private static String extraerCodigoCliente(String nombreArchivo) {
+        // Suponemos que el nombre del archivo es algo como "10444_Factura_RAICO.pdf"
+        try {
+            return nombreArchivo.split("_")[0]; // Tomamos la parte antes del primer "_"
+        } catch (Exception e) {
+            return null; // Si falla algo, devolvemos null
+        }
     }
 }
+
 

@@ -10,32 +10,33 @@ import java.sql.ResultSet;
 
 public class ClienteRepository {
 
-    // Este método recibe un código de cliente, consulta la base y devuelve un objeto Cliente
-    public static Cliente buscarClientePorCodigo(int codigoCliente) {
+    // Método que busca un cliente por su código en la base de datos
+    public static Cliente buscarPorCodigo(String codigo) {
         Cliente cliente = null;
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT Clientes_Codigo, Clientes_Nombre, Clientes_EMail " +
-                    "FROM Clientes WHERE Clientes_Codigo = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, codigoCliente);
+            // Actualizamos los nombres de las columnas a los correctos: Clientes_Codigo, Clientes_Nombre, Clientes_EMail
+            String sql = "SELECT Clientes_Codigo, Clientes_Nombre, Clientes_EMail FROM Clientes WHERE Clientes_Codigo = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, codigo); // Reemplazamos el "?" por el código del cliente
 
-            ResultSet rs = stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery(); // Ejecutamos la consulta
 
+            // Si encontramos un cliente, creamos un objeto Cliente
             if (rs.next()) {
-                int codigo = rs.getInt("Clientes_Codigo");
-                String nombre = rs.getString("Clientes_Nombre");
-                String email = rs.getString("Clientes_EMail");
-
-                // Creamos el objeto Cliente
-                cliente = new Cliente(codigo, nombre, email);
+                cliente = new Cliente(
+                        rs.getString("Clientes_Codigo"), // Tomamos la columna 'Clientes_Codigo'
+                        rs.getString("Clientes_Nombre"), // Tomamos la columna 'Clientes_Nombre'
+                        rs.getString("Clientes_EMail") // Tomamos la columna 'Clientes_EMail'
+                );
             }
 
         } catch (Exception e) {
-            e.printStackTrace(); // Para depurar si hay error de conexión o SQL
+            e.printStackTrace(); // Mostramos el error si algo falla
         }
 
-        return cliente; // Puede devolver null si no encontró el cliente
+        return cliente; // Devolvemos el cliente encontrado (o null si no se encontró)
     }
 }
+
 
